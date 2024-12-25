@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stunning Calculator</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+      background-size: 300% 300%;
+      animation: gradientBackground 10s ease infinite;
+      color: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .calculator-container {
+      text-align: center;
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 20px;
+      padding: 30px;
+      width: 90%;
+      max-width: 600px;
+      box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.5);
+    }
+
+    .calculator-title {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+    }
+
+    .input-group {
+      margin-bottom: 15px;
+      text-align: left;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+    }
+
+    .button-group button {
+      background: linear-gradient(135deg, #00c6ff, #0072ff);
+      color: #ffffff;
+      border: none;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border-radius: 30px;
+      cursor: pointer;
+      margin: 5px;
+      box-shadow: 0px 8px 15px rgba(0, 255, 255, 0.6);
+      transition: all 0.3s ease;
+    }
+
+    .button-group button:hover {
+      box-shadow: 0px 15px 30px rgba(0, 255, 255, 0.9);
+      transform: translateY(-3px);
+    }
+
+    .results p, .history-container {
+      font-size: 1rem;
+      margin-top: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      padding: 8px;
+      text-align: center;
+    }
+
+    th {
+      background: rgba(0, 0, 0, 0.8);
+    }
+
+    @keyframes gradientBackground {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator-container">
+    <h1 class="calculator-title">Stunning Calculator By Syed Mujtaba Abbas </h1>
+
+    <form id="calculatorForm">
+      <div class="input-group">
+        <label for="CompenyRate">Compeny Rate (w):</label>
+        <input type="number" id="CompenyRate" placeholder="Enter Compeny Rate" />
+      </div>
+      <div class="input-group">
+        <label for="proteinWeight">Protein Weight (x):</label>
+        <input type="number" id="proteinWeight" placeholder="Enter Protein Weight" />
+      </div>
+      <div class="input-group">
+        <label for="proteinRate">Protein Rate (y):</label>
+        <input type="number" id="proteinRate" placeholder="Enter Protein Rate" />
+      </div>
+
+      <p class="error-message" id="errorMessage" style="display:none;">Please fill all fields with valid numbers!</p>
+
+      <div class="button-group">
+        <button type="submit" class="glow-button">Calculate</button>
+        <button type="button" id="clearBtn" class="clear-button">Clear</button>
+        <button type="button" id="toggleModeBtn" class="toggle-button">Toggle Dark/Light Mode</button>
+      </div>
+    </form>
+
+    <div class="results">
+      <p>Protein Amount (PA): <span id="proteinAmount">0.00</span></p>
+      <p>Gum Rate (GR): <span id="gumRate">0.00</span></p>
+    </div>
+
+    <div class="history-container">
+      <h3>Calculation History</h3>
+      <table id="historyTable">
+        <thead>
+          <tr>
+            <th>Guar Rate (w)</th>
+            <th>Protein Weight (x)</th>
+            <th>Protein Rate (y)</th>
+            <th>Protein Amount (PA)</th>
+            <th>Gum Rate (GR)</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div class="button-group">
+        <button id="downloadBtn" class="glow-button">Download CSV</button>
+        <button id="resetHistoryBtn" class="clear-button">Reset History</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById("calculatorForm");
+    const guarRateInput = document.getElementById("guarRate");
+    const proteinWeightInput = document.getElementById("proteinWeight");
+    const proteinRateInput = document.getElementById("proteinRate");
+    const proteinAmountDisplay = document.getElementById("proteinAmount");
+    const gumRateDisplay = document.getElementById("gumRate");
+    const errorMessage = document.getElementById("errorMessage");
+    const historyTableBody = document.querySelector("#historyTable tbody");
+    const downloadButton = document.getElementById("downloadBtn");
+    const resetHistoryButton = document.getElementById("resetHistoryBtn");
+    const clearButton = document.getElementById("clearBtn");
+    const toggleModeButton = document.getElementById("toggleModeBtn");
+    const body = document.body;
+
+    let history = [];
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const guarRate = parseFloat(guarRateInput.value);
+      const proteinWeight = parseFloat(proteinWeightInput.value);
+      const proteinRate = parseFloat(proteinRateInput.value);
+
+      if (isNaN(guarRate) || isNaN(proteinWeight) || isNaN(proteinRate)) {
+        errorMessage.style.display = "block";
+        return;
+      }
+
+      errorMessage.style.display = "none";
+      const proteinAmount = (proteinWeight * proteinRate) / 100;
+      const gumRate = guarRate - proteinAmount;
+
+      proteinAmountDisplay.textContent = proteinAmount.toFixed(2);
+      gumRateDisplay.textContent = gumRate.toFixed(2);
+
+      history.push({ guarRate, proteinWeight, proteinRate, proteinAmount, gumRate });
+      updateHistoryTable();
+    });
+
+    function updateHistoryTable() {
+      historyTableBody.innerHTML = "";
+      history.forEach((entry) => {
+        const row = `<tr>
+          <td>${entry.guarRate}</td>
+          <td>${entry.proteinWeight}</td>
+          <td>${entry.proteinRate}</td>
+          <td>${entry.proteinAmount.toFixed(2)}</td>
+          <td>${entry.gumRate.toFixed(2)}</td>
+        </tr>`;
+        historyTableBody.innerHTML += row;
+      });
+    }
+
+    downloadButton.addEventListener("click", () => {
+      const csvContent = [
+        ["Guar Rate", "Protein Weight", "Protein Rate", "Protein Amount", "Gum Rate"],
+        ...history.map((row) => Object.values(row)),
+      ]
+        .map((e) => e.join(","))
+        .join("\n");
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "history.csv";
+      link.click();
+    });
+
+    resetHistoryButton.addEventListener("click", () => {
+      history = [];
+      updateHistoryTable();
+    });
+
+    clearButton.addEventListener("click", () => {
+      guarRateInput.value = "";
+      proteinWeightInput.value = "";
+      proteinRateInput.value = "";
+      proteinAmountDisplay.textContent = "0.00";
+      gumRateDisplay.textContent = "0.00";
+      errorMessage.style.display = "none";
+    });
+
+    toggleModeButton.addEventListener("click", () => {
+      body.classList.toggle("dark-mode");
+    });
+
+    // Add this to the existing <script> section  
+
+// Load history from local storage  
+window.onload = () => {  
+  const savedHistory = JSON.parse(localStorage.getItem("calculationHistory"));  
+  if (savedHistory) {  
+    history = savedHistory;  
+    updateHistoryTable();  
+  }  
+};  
+
+// Update history table function to also update local storage  
+function updateHistoryTable() {  
+  historyTableBody.innerHTML = "";  
+  history.forEach((entry) => {  
+    const row = `<tr>  
+      <td>${entry.guarRate}</td>  
+      <td>${entry.proteinWeight}</td>  
+      <td>${entry.proteinRate}</td>  
+      <td>${entry.proteinAmount.toFixed(2)}</td>  
+      <td>${entry.gumRate.toFixed(2)}</td>  
+    </tr>`;  
+    historyTableBody.innerHTML += row;  
+  });  
+  localStorage.setItem("calculationHistory", JSON.stringify(history));  
+}  
+
+// Modify the form submission to include advanced validation  
+form.addEventListener("submit", (e) => {  
+  e.preventDefault();  
+  const guarRate = parseFloat(guarRateInput.value);  
+  const proteinWeight = parseFloat(proteinWeightInput.value);  
+  const proteinRate = parseFloat(proteinRateInput.value);  
+
+  // Add validation for non-negative values  
+  if (  
+    isNaN(guarRate) || guarRate < 0 ||  
+    isNaN(proteinWeight) || proteinWeight < 0 ||  
+    isNaN(proteinRate) || proteinRate < 0  
+  ) {  
+    errorMessage.innerText = "Please fill all fields with valid positive numbers!";  
+    errorMessage.style.display = "block";  
+    return;  
+  }  
+
+  errorMessage.style.display = "none";  
+  const proteinAmount = (proteinWeight * proteinRate) / 100;  
+  const gumRate = guarRate - proteinAmount;  
+
+  proteinAmountDisplay.textContent = proteinAmount.toFixed(2);  
+  gumRateDisplay.textContent = gumRate.toFixed(2);  
+
+  history.push({ guarRate, proteinWeight, proteinRate, proteinAmount, gumRate });  
+  updateHistoryTable();  
+});  
+
+// Reset button to clear local storage as well  
+resetHistoryButton.addEventListener("click", () => {  
+  history = [];  
+  localStorage.removeItem("calculationHistory");  
+  updateHistoryTable();  
+});  
+
+toggleModeButton.addEventListener("click", () => {  
+  body.classList.toggle("dark-mode");  
+  // Save the theme preference  
+  localStorage.setItem("theme", body.classList.contains("dark-mode") ? "dark" : "light");  
+  body.classList.contains("dark-mode") ? document.body.classList.add("dark-mode") : document.body.classList.remove("dark-mode");  
+});  
+
+// Load theme preference on page load  
+const theme = localStorage.getItem("theme");  
+if (theme === "dark") {  
+  body.classList.add("dark-mode");  
+}
+  </script>
+</body>
+</html>
